@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export const metadata = {
-  title: "Invoice App",
+  title: "Skuling Invoice Generator",
   description: "Create and manage invoices",
 };
 
