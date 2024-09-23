@@ -15,7 +15,10 @@ class InvoiceForm extends React.Component {
     this.state = {
       isOpen: false,
       currency: "Rp",
-      invoiceNumber: 1,
+      invoiceNumber: new Date()
+        .toISOString()
+        .slice(2, 16)
+        .replace(/[-T:]/g, ""),
       dateOfIssue: new Date().toISOString().split("T")[0],
       billTo: "PT Cerdaskan Penerus Bangsa",
       billToEmail: "finance@skuling.id",
@@ -26,119 +29,110 @@ class InvoiceForm extends React.Component {
       billFromAddress: "",
       nikNpwp: "",
       notes: "",
+      nomorHp: "",
       total: "0.00",
       subTotal: "0.00",
       taxRate: "",
       taxAmmount: "0.00",
       discountRate: "",
       discountAmmount: "0.00",
+      items: [
+        {
+          id: 0,
+          name: "",
+          description: "",
+          price: "10000",
+          quantity: 1,
+        },
+      ],
     };
-    this.state.items = [
-      {
-        id: 0,
-        name: "",
-        description: "",
-        price: "10000",
-        quantity: 1,
-      },
-    ];
-    this.editField = this.editField.bind(this);
   }
-  componentDidMount(prevProps) {
+
+  componentDidMount() {
     this.handleCalculateTotal();
   }
-  handleRowDel(items) {
-    var index = this.state.items.indexOf(items);
-    this.state.items.splice(index, 1);
-    this.setState(this.state.items);
-  }
-  handleAddEvent(evt) {
-    var id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
-    var items = {
+
+  handleRowDel = (item) => {
+    const items = this.state.items.filter((i) => i !== item);
+    this.setState({ items }, this.handleCalculateTotal);
+  };
+
+  handleAddEvent = (evt) => {
+    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+    const newItem = {
       id: id,
       name: "",
       price: "10000",
       description: "",
       quantity: 1,
     };
-    this.state.items.push(items);
-    this.setState(this.state.items);
-  }
-  handleCalculateTotal() {
-    var items = this.state.items;
-    var subTotal = 0;
+    const items = [...this.state.items, newItem];
+    this.setState({ items }, this.handleCalculateTotal);
+  };
 
-    items.map(function (items) {
-      subTotal = parseFloat(
-        subTotal + parseFloat(items.price).toFixed(2) * parseInt(items.quantity)
-      ).toFixed(2);
+  handleCalculateTotal = () => {
+    const items = this.state.items;
+    let subTotal = items.reduce(
+      (sum, item) => sum + parseFloat(item.price) * parseInt(item.quantity),
+      0
+    );
+
+    subTotal = subTotal.toFixed(2);
+
+    const taxAmmount = (subTotal * (this.state.taxRate / 100)).toFixed(2);
+    const discountAmmount = (
+      subTotal *
+      (this.state.discountRate / 100)
+    ).toFixed(2);
+
+    const total = (subTotal - discountAmmount + parseFloat(taxAmmount)).toFixed(
+      2
+    );
+
+    this.setState({
+      subTotal: subTotal,
+      taxAmmount: taxAmmount,
+      discountAmmount: discountAmmount,
+      total: total,
     });
+  };
 
+  onItemizedItemEdit = (evt) => {
+    const { id, name, value } = evt.target;
+    const updatedItems = this.state.items.map((item) =>
+      item.id === id ? { ...item, [name]: value } : item
+    );
+    this.setState({ items: updatedItems }, this.handleCalculateTotal);
+  };
+
+  editField = (event) => {
+    const { name, value } = event.target;
+    // If the field is either 'nikNpwp' or 'nomorHp', ensure the value is numeric
+    if (name === "nikNpwp" || name === "nomorHp") {
+      if (!/^\d*$/.test(value)) {
+        return; // Do not update state if the value contains non-numeric characters
+      }
+    }
     this.setState(
       {
-        subTotal: parseFloat(subTotal).toFixed(2),
+        [name]: value,
       },
-      () => {
-        this.setState(
-          {
-            taxAmmount: parseFloat(
-              parseFloat(subTotal) * (this.state.taxRate / 100)
-            ).toFixed(2),
-          },
-          () => {
-            this.setState(
-              {
-                discountAmmount: parseFloat(
-                  parseFloat(subTotal) * (this.state.discountRate / 100)
-                ).toFixed(2),
-              },
-              () => {
-                this.setState({
-                  total:
-                    subTotal -
-                    this.state.discountAmmount +
-                    parseFloat(this.state.taxAmmount),
-                });
-              }
-            );
-          }
-        );
-      }
+      this.handleCalculateTotal
     );
-  }
-  onItemizedItemEdit(evt) {
-    var item = {
-      id: evt.target.id,
-      name: evt.target.name,
-      value: evt.target.value,
-    };
-    var items = this.state.items.slice();
-    var newItems = items.map(function (items) {
-      for (var key in items) {
-        if (key == item.name && items.id == item.id) {
-          items[key] = item.value;
-        }
-      }
-      return items;
-    });
-    this.setState({ items: newItems });
-    this.handleCalculateTotal();
-  }
-  editField = (event) => {
-    this.setState({
-      [event.target.name]: event.target.value,
-    });
-    this.handleCalculateTotal();
   };
-  onCurrencyChange = (selectedOption) => {
-    this.setState(selectedOption);
+
+  onCurrencyChange = (event) => {
+    this.setState({ currency: event.target.value });
   };
+
   openModal = (event) => {
     event.preventDefault();
     this.handleCalculateTotal();
     this.setState({ isOpen: true });
   };
-  closeModal = (event) => this.setState({ isOpen: false });
+
+  closeModal = () => this.setState({ isOpen: false });
+
   render() {
     return (
       <Form onSubmit={this.openModal}>
@@ -146,7 +140,7 @@ class InvoiceForm extends React.Component {
           <Col md={8} lg={9}>
             <Card className="p-4 p-xl-5 my-3 my-xl-4">
               <div className="d-flex flex-row align-items-start justify-content-between mb-3">
-                <div class="d-flex flex-column">
+                <div className="d-flex flex-column">
                   <div className="d-flex flex-row align-items-center">
                     <span className="fw-bold d-block me-2">
                       Invoice&nbsp;Date:
@@ -154,12 +148,10 @@ class InvoiceForm extends React.Component {
                     <Form.Control
                       type="date"
                       value={this.state.dateOfIssue}
-                      name={"dateOfIssue"}
-                      onChange={(event) => this.editField(event)}
-                      style={{
-                        maxWidth: "150px",
-                      }}
-                      required="required"
+                      name="dateOfIssue"
+                      onChange={this.editField}
+                      style={{ maxWidth: "150px" }}
+                      required
                     />
                   </div>
                 </div>
@@ -168,15 +160,12 @@ class InvoiceForm extends React.Component {
                     Invoice&nbsp;Number:&nbsp;
                   </span>
                   <Form.Control
-                    type="number"
                     value={this.state.invoiceNumber}
-                    name={"invoiceNumber"}
-                    onChange={(event) => this.editField(event)}
+                    name="invoiceNumber"
+                    onChange={this.editField}
                     min="1"
-                    style={{
-                      maxWidth: "70px",
-                    }}
-                    required="required"
+                    style={{ maxWidth: "150px" }}
+                    required
                   />
                 </div>
               </div>
@@ -185,85 +174,94 @@ class InvoiceForm extends React.Component {
                 <Col>
                   <Form.Label className="fw-bold">Bill to:</Form.Label>
                   <Form.Control
-                    placeholder={"Who is this invoice to?"}
+                    placeholder="Who is this invoice to?"
                     rows={3}
                     value={this.state.billTo}
                     type="text"
                     name="billTo"
                     className="my-2"
-                    onChange={(event) => this.editField(event)}
+                    onChange={this.editField}
                     autoComplete="name"
-                    required="required"
+                    required
                   />
                   <Form.Control
-                    placeholder={"Email address"}
+                    placeholder="Email address"
                     value={this.state.billToEmail}
                     type="email"
                     name="billToEmail"
                     className="my-2"
-                    onChange={(event) => this.editField(event)}
+                    onChange={this.editField}
                     autoComplete="email"
-                    required="required"
+                    required
                   />
                   <Form.Control
-                    placeholder={"Billing address"}
+                    placeholder="Billing address"
                     value={this.state.billToAddress}
                     type="text"
                     name="billToAddress"
                     className="my-2"
                     autoComplete="address"
-                    onChange={(event) => this.editField(event)}
-                    required="required"
+                    onChange={this.editField}
+                    required
                   />
                 </Col>
                 <Col>
                   <Form.Label className="fw-bold">Bill from:</Form.Label>
                   <Form.Control
-                    placeholder={"Nama kamu sesuai KTP"}
+                    placeholder="Nama kamu sesuai KTP"
                     rows={3}
                     value={this.state.billFrom}
                     type="text"
                     name="billFrom"
                     className="my-2"
-                    onChange={(event) => this.editField(event)}
+                    onChange={this.editField}
                     autoComplete="name"
-                    required="required"
+                    required
                   />
                   <Form.Control
-                    placeholder={"Alamat email"}
+                    placeholder="Alamat email"
                     value={this.state.billFromEmail}
                     type="email"
                     name="billFromEmail"
                     className="my-2"
-                    onChange={(event) => this.editField(event)}
+                    onChange={this.editField}
                     autoComplete="email"
-                    required="required"
+                    required
                   />
                   <Form.Control
-                    placeholder={"Alamat sesuai KTP"}
+                    placeholder="Alamat sesuai KTP"
                     value={this.state.billFromAddress}
                     type="text"
                     name="billFromAddress"
                     className="my-2"
                     autoComplete="address"
-                    onChange={(event) => this.editField(event)}
-                    required="required"
+                    onChange={this.editField}
+                    required
                   />
                   <Form.Control
-                    placeholder={"Nomor NIK/NPWP"}
+                    placeholder="Nomor NIK/NPWP"
                     value={this.state.nikNpwp}
                     type="text"
                     name="nikNpwp"
                     className="my-2"
-                    onChange={(event) => this.editField(event)}
-                    required="required"
+                    onChange={this.editField}
+                    required
+                  />
+                  <Form.Control
+                    placeholder="Nomor HP"
+                    value={this.state.nomorHp}
+                    type="text"
+                    name="nomorHp"
+                    className="my-2"
+                    onChange={this.editField}
+                    required
                   />
                 </Col>
               </Row>
               <InvoiceItem
-                onItemizedItemEdit={this.onItemizedItemEdit.bind(this)}
-                onRowAdd={this.handleAddEvent.bind(this)}
-                onRowDel={this.handleRowDel.bind(this)}
+                onItemizedItemEdit={this.onItemizedItemEdit}
+                onRowAdd={this.handleAddEvent}
+                onRowDel={this.handleRowDel}
                 currency={this.state.currency}
                 items={this.state.items}
               />
@@ -279,9 +277,7 @@ class InvoiceForm extends React.Component {
                   <hr />
                   <div
                     className="d-flex flex-row align-items-start justify-content-between"
-                    style={{
-                      fontSize: "1.125rem",
-                    }}
+                    style={{ fontSize: "1.125rem" }}
                   >
                     <span className="fw-bold">Total:</span>
                     <span className="fw-bold">
@@ -296,11 +292,12 @@ class InvoiceForm extends React.Component {
                 <Col>
                   <div className="bg-light p-3 border rounded">
                     <p className="text-center fs-5 fw-bold">
-                      Akan ditransfer sebesar {this.state.currency}
+                      Akan ditransfer sebesar{" "}
+                      {this.state.currency.toLocaleString("id-ID")}
                       {Math.ceil(
                         parseFloat(this.state.total) * 0.975
-                      ).toLocaleString()}{" "}
-                      setelah pemotongan pajak 2.5%
+                      ).toLocaleString("id-ID")}{" "}
+                      setelah pemotongan pajak 2,5%
                     </p>
                   </div>
                 </Col>
@@ -326,9 +323,8 @@ class InvoiceForm extends React.Component {
               <Form.Group className="mb-3">
                 <Form.Label className="fw-bold">Currency:</Form.Label>
                 <Form.Select
-                  onChange={(event) =>
-                    this.onCurrencyChange({ currency: event.target.value })
-                  }
+                  value={this.state.currency}
+                  onChange={this.onCurrencyChange}
                   className="btn btn-light my-1"
                   aria-label="Change Currency"
                 >

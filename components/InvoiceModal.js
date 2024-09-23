@@ -71,6 +71,7 @@ class InvoiceModal extends React.Component {
                   <div>{this.props.info.billFromAddress || ""}</div>
                   <div>{this.props.info.billFromEmail || ""}</div>
                   <div>NIK/NPWP: {this.props.info.nikNpwp || ""}</div>
+                  <div>Nomor HP: {this.props.info.nomorHp || ""}</div>
                 </Col>
                 <Col md={4}>
                   <div className="fw-bold mt-2">Date Of Issue:</div>
