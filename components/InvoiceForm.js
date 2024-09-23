@@ -20,7 +20,7 @@ class InvoiceForm extends React.Component {
         .slice(2, 16)
         .replace(/[-T:]/g, ""),
       dateOfIssue: new Date().toISOString().split("T")[0],
-      billTo: "PT Cerdaskan Penerus Bangsa",
+      billTo: "PT Cerdaskan Penerus Bangsa (Skuling)",
       billToEmail: "finance@skuling.id",
       billToAddress:
         "Jl. Garuda Gg. Rajawali, No. 205, Tahunan, Umbulharjo, Yogyakarta, DI Yogyakarta, 55167",
@@ -30,12 +30,12 @@ class InvoiceForm extends React.Component {
       nikNpwp: "",
       notes: "",
       nomorHp: "",
-      total: "0.00",
-      subTotal: "0.00",
+      total: "0",
+      subTotal: "0",
       taxRate: "",
-      taxAmmount: "0.00",
+      taxAmmount: "0",
       discountRate: "",
-      discountAmmount: "0.00",
+      discountAmmount: "0",
       items: [
         {
           id: 0,
@@ -77,17 +77,12 @@ class InvoiceForm extends React.Component {
       0
     );
 
-    subTotal = subTotal.toFixed(2);
+    subTotal = subTotal;
 
-    const taxAmmount = (subTotal * (this.state.taxRate / 100)).toFixed(2);
-    const discountAmmount = (
-      subTotal *
-      (this.state.discountRate / 100)
-    ).toFixed(2);
+    const taxAmmount = subTotal * (this.state.taxRate / 100);
+    const discountAmmount = subTotal * (this.state.discountRate / 100);
 
-    const total = (subTotal - discountAmmount + parseFloat(taxAmmount)).toFixed(
-      2
-    );
+    const total = subTotal - discountAmmount + parseFloat(taxAmmount);
 
     this.setState({
       subTotal: subTotal,
@@ -139,8 +134,8 @@ class InvoiceForm extends React.Component {
         <Row>
           <Col md={8} lg={9}>
             <Card className="p-4 p-xl-5 my-3 my-xl-4">
-              <div className="d-flex flex-row align-items-start justify-content-between mb-3">
-                <div className="d-flex flex-column">
+              <div className="d-flex flex-column flex-md-row align-items-start justify-content-between mb-3">
+                <div className="d-flex flex-column mb-3 mb-md-0">
                   <div className="d-flex flex-row align-items-center">
                     <span className="fw-bold d-block me-2">
                       Invoice&nbsp;Date:
@@ -171,7 +166,7 @@ class InvoiceForm extends React.Component {
               </div>
               <hr className="my-4" />
               <Row className="mb-5">
-                <Col>
+                <Col xs={12} md={6}>
                   <Form.Label className="fw-bold">Bill to:</Form.Label>
                   <Form.Control
                     placeholder="Who is this invoice to?"
@@ -205,10 +200,10 @@ class InvoiceForm extends React.Component {
                     required
                   />
                 </Col>
-                <Col>
+                <Col xs={12} md={6}>
                   <Form.Label className="fw-bold">Bill from:</Form.Label>
                   <Form.Control
-                    placeholder="Nama kamu sesuai KTP"
+                    placeholder="Nama sesuai KTP"
                     rows={3}
                     value={this.state.billFrom}
                     type="text"
@@ -266,7 +261,7 @@ class InvoiceForm extends React.Component {
                 items={this.state.items}
               />
               <Row className="mt-4 justify-content-end">
-                <Col lg={6}>
+                <Col lg={6} className="col-12">
                   <div className="d-flex flex-row align-items-start justify-content-between">
                     <span className="fw-bold">Subtotal:</span>
                     <span>
@@ -304,7 +299,7 @@ class InvoiceForm extends React.Component {
               </Row>
             </Card>
           </Col>
-          <Col md={4} lg={3}>
+          <Col md={4} lg={3} className="col-12">
             <div className="sticky-top pt-md-3 pt-xl-4">
               <Button variant="primary" type="submit" className="d-block w-100">
                 Review Invoice
@@ -320,7 +315,7 @@ class InvoiceForm extends React.Component {
                 discountAmmount={this.state.discountAmmount}
                 total={this.state.total}
               />
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 mt-3">
                 <Form.Label className="fw-bold">Currency:</Form.Label>
                 <Form.Select
                   value={this.state.currency}

@@ -4,6 +4,7 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { BiTrash } from "react-icons/bi";
 import EditableField from "./EditableField";
+import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap styles are imported
 
 class InvoiceItem extends React.Component {
   render() {
@@ -21,26 +22,28 @@ class InvoiceItem extends React.Component {
         />
       );
     });
+
     return (
-      <div>
-        <Table>
+      <div className="container">
+        <Table responsive="sm">
           <thead>
             <tr>
               <th>ITEM</th>
-              <th>QTY</th>
-              <th>PRICE/RATE</th>
+              <th className="text-center">QTY</th>
+              <th className="text-center">PRICE/RATE</th>
               <th className="text-center">ACTION</th>
             </tr>
           </thead>
           <tbody>{itemTable}</tbody>
         </Table>
-        <Button className="fw-bold" onClick={this.props.onRowAdd}>
+        <Button className="fw-bold mt-3" onClick={this.props.onRowAdd}>
           Add Item
         </Button>
       </div>
     );
   }
 }
+
 class ItemRow extends React.Component {
   onDelEvent() {
     this.props.onDelEvent(this.props.item);
@@ -70,7 +73,7 @@ class ItemRow extends React.Component {
             }}
           />
         </td>
-        <td style={{ minWidth: "70px" }}>
+        <td style={{ minWidth: "70px" }} className="text-center">
           <EditableField
             onItemizedItemEdit={this.props.onItemizedItemEdit}
             cellData={{
@@ -83,7 +86,7 @@ class ItemRow extends React.Component {
             }}
           />
         </td>
-        <td style={{ minWidth: "200px" }}>
+        <td style={{ minWidth: "100px" }} className="text-center">
           <EditableField
             onItemizedItemEdit={this.props.onItemizedItemEdit}
             cellData={{
@@ -91,7 +94,7 @@ class ItemRow extends React.Component {
               type: "number",
               name: "price",
               min: 1,
-              step: "0.01",
+              step: "1",
               presicion: 2,
               textAlign: "text-end",
               value: this.props.item.price,

@@ -5,24 +5,32 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import Modal from "react-bootstrap/Modal";
-import { BiPaperPlane, BiCloudDownload } from "react-icons/bi";
+import { BiCloudDownload } from "react-icons/bi";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-function GenerateInvoice() {
-  html2canvas(document.querySelector("#invoiceCapture")).then((canvas) => {
-    const imgData = canvas.toDataURL("image/png", 1.0);
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "pt",
-      format: [612, 792],
-    });
-    pdf.internal.scaleFactor = 1;
-    const imgProps = pdf.getImageProperties(imgData);
+function GenerateInvoice(invoiceNumber) {
+  const input = document.getElementById("invoiceCapture");
+  html2canvas(input, { scrollY: -window.scrollY, scale: 2 }).then((canvas) => {
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "pt", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("invoice-001.pdf");
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+    const imgX = (pdfWidth - imgWidth * ratio) / 2;
+    const imgY = 30;
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      imgX,
+      imgY,
+      imgWidth * ratio,
+      imgHeight * ratio
+    );
+    pdf.save(`invoice-${invoiceNumber}.pdf`);
   });
 }
 
@@ -30,6 +38,7 @@ class InvoiceModal extends React.Component {
   constructor(props) {
     super(props);
   }
+
   render() {
     return (
       <div>
@@ -46,7 +55,7 @@ class InvoiceModal extends React.Component {
                   {this.props.info.billFrom || "John Uberbacher"}
                 </h4>
                 <h6 className="fw-bold text-secondary mb-1">
-                  Invoice #: {this.props.info.invoiceNumber || ""}
+                  Invoice #{this.props.info.invoiceNumber || ""}
                 </h6>
               </div>
               <div className="text-end ms-4">
@@ -168,7 +177,7 @@ class InvoiceModal extends React.Component {
                 variant="primary"
                 className="d-block mx-auto"
                 style={{ maxWidth: "250px" }}
-                onClick={GenerateInvoice}
+                onClick={() => GenerateInvoice(this.props.info.invoiceNumber)}
               >
                 <BiCloudDownload
                   style={{ width: "15px", height: "15px", marginTop: "-3px" }}
