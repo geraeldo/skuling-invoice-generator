@@ -28,6 +28,8 @@ class InvoiceForm extends React.Component {
       billFromEmail: "",
       billFromAddress: "",
       nikNpwp: "",
+      namaBank: "",
+      nomorRekening: "",
       notes: "",
       nomorHp: "",
       total: "0",
@@ -102,8 +104,8 @@ class InvoiceForm extends React.Component {
 
   editField = (event) => {
     const { name, value } = event.target;
-    // If the field is either 'nikNpwp' or 'nomorHp', ensure the value is numeric
-    if (name === "nikNpwp" || name === "nomorHp") {
+    // If the field is either 'nomorHp', ensure the value is numeric
+    if (name === "nomorHp") {
       if (!/^\d*$/.test(value)) {
         return; // Do not update state if the value contains non-numeric characters
       }
@@ -221,7 +223,6 @@ class InvoiceForm extends React.Component {
                     className="my-2"
                     onChange={this.editField}
                     autoComplete="email"
-                    required
                   />
                   <Form.Control
                     placeholder="Alamat sesuai KTP"
@@ -231,7 +232,6 @@ class InvoiceForm extends React.Component {
                     className="my-2"
                     autoComplete="address"
                     onChange={this.editField}
-                    required
                   />
                   <Form.Control
                     placeholder="Nomor NIK/NPWP"
@@ -247,6 +247,24 @@ class InvoiceForm extends React.Component {
                     value={this.state.nomorHp}
                     type="text"
                     name="nomorHp"
+                    className="my-2"
+                    onChange={this.editField}
+                    required
+                  />
+                  <Form.Control
+                    placeholder="Nama Bank"
+                    value={this.state.namaBank}
+                    type="text"
+                    name="namaBank"
+                    className="my-2"
+                    onChange={this.editField}
+                    required
+                  />
+                  <Form.Control
+                    placeholder="Nomor Rekening Bank"
+                    value={this.state.nomorRekening}
+                    type="text"
+                    name="nomorRekening"
                     className="my-2"
                     onChange={this.editField}
                     required
