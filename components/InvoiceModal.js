@@ -13,7 +13,7 @@ function GenerateInvoice(invoiceNumber) {
   const input = document.getElementById("invoiceCapture");
   html2canvas(input, { scrollY: -window.scrollY, scale: 2 }).then((canvas) => {
     const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "pt", "a4");
+    const pdf = new jsPDF("p", "pt", "a4", true);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
     const imgWidth = canvas.width;
